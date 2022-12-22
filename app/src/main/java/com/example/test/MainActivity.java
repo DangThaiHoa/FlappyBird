@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,15 +27,16 @@ public class MainActivity extends AppCompatActivity {
     public static Button txt_restart;
     public static ImageView txt_F_B, btn_play;
     public static ImageView btn_trophy;
-    public static ImageView btn_musicOn, btn_musicOff, btn_audioOn, btn_audioOff;
+    public static ImageView btn_setting;
     public static ImageView btn_skinChange;
     public static RelativeLayout rl_over;
     public static RelativeLayout rl_start;
     public static MediaPlayer media;
     public static ImageView btn_bird1, btn_bird2, btn_bird3;
+    Switch mediaOff, musicOff;
     int bird_a, bird_b;
     private GameView gv;
-    Dialog dialog;
+    Dialog dialog, dialogSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +56,7 @@ public class MainActivity extends AppCompatActivity {
         txt_score_over = findViewById(R.id.txt_score_over);
         rl_over = findViewById(R.id.rl_over);
         rl_start = findViewById(R.id.rl_start);
-        btn_musicOn = findViewById(R.id.btn_musicOn);
-        btn_musicOff = findViewById(R.id.btn_musicOff);
-        btn_audioOn = findViewById(R.id.btn_audioOn);
-        btn_audioOff = findViewById(R.id.btn_audioOff);
+        btn_setting = findViewById(R.id.btn_Setting);
         btn_play = findViewById(R.id.btn_play);
         btn_skinChange = findViewById(R.id.btn_skinChange);
         btn_trophy = findViewById(R.id.btn_trophy);
@@ -73,33 +73,10 @@ public class MainActivity extends AppCompatActivity {
 
         gv.intBird(bird_a, bird_b);
 
-        btn_musicOn.setOnClickListener(new View.OnClickListener() {
+        btn_setting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btn_musicOff.setVisibility(View.VISIBLE);
-                media.pause();
-            }
-        });
-
-        btn_musicOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                btn_musicOff.setVisibility(View.INVISIBLE);
-                media.start();
-            }
-        });
-        btn_audioOn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                btn_audioOff.setVisibility(View.VISIBLE);
-                GameView.Loadsound = false;
-            }
-        });
-        btn_audioOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                btn_audioOff.setVisibility(View.INVISIBLE);
-                GameView.Loadsound = true;
+                dialogSetting.show();
             }
         });
 
@@ -132,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         showDialog();
+        showDialogSetting();
 
         btn_trophy.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,10 +171,46 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void showDialogSetting() {
+        dialogSetting = new Dialog(MainActivity.this);
+        dialogSetting.setContentView(R.layout.setting_dia_log);
+        dialogSetting.getWindow().setBackgroundDrawable(getDrawable(R.drawable.bg_dialog));
+        dialogSetting.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialogSetting.setCancelable(true);
+
+        mediaOff = dialogSetting.findViewById(R.id.turnOff_media);
+        musicOff = dialogSetting.findViewById(R.id.turnOff_music);
+
+        mediaOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b == true){
+                    GameView.Loadsound = false;
+                }else{
+                    GameView.Loadsound = true;
+                }
+            }
+        });
+
+        musicOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b == true){
+                    media.pause();
+                }else{
+                    media.start();
+                }
+            }
+        });
+
+    }
+
+
     @Override
     public void onBackPressed() {
-        if(dialog.isShowing()) {
+        if(dialog.isShowing() || dialogSetting.isShowing()) {
             dialog.dismiss();
+            dialogSetting.dismiss();
         } else {
             super.onBackPressed();
         }
