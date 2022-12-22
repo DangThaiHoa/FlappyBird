@@ -1,8 +1,12 @@
 package com.example.test;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -23,8 +27,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static TextView txt_score, txt_best_score, txt_score_over;
-    public static Button txt_restart;
+    public static TextView txt_score, txt_best_score, txt_score_over, txt_user, txt_userLogin;
+    public static Button txt_restart, btnLogin, btnNoLogin;
     public static ImageView txt_F_B, btn_play;
     public static ImageView btn_trophy;
     public static ImageView btn_setting;
@@ -36,7 +40,13 @@ public class MainActivity extends AppCompatActivity {
     Switch mediaOff, musicOff;
     int bird_a, bird_b;
     private GameView gv;
-    Dialog dialog, dialogSetting;
+    Dialog dialog, dialogSetting, dialogLogin, dialogScore;
+    RecyclerView rc;
+    ScoreAdapter scoreAdapter;
+    ArrayList<Score> scoreArrayList = new ArrayList<>();
+    SQLiteDatabase sqLiteDatabase;
+
+    TopScoreDatabase db = new TopScoreDatabase(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         btn_play = findViewById(R.id.btn_play);
         btn_skinChange = findViewById(R.id.btn_skinChange);
         btn_trophy = findViewById(R.id.btn_trophy);
+        txt_user = findViewById(R.id.user);
         gv = findViewById(R.id.gv);
 
         //music
@@ -93,6 +104,20 @@ public class MainActivity extends AppCompatActivity {
         txt_restart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String bestScore = txt_best_score.getText().toString();
+                String[] split = bestScore.split(":");
+                Integer score = Integer.valueOf(split[1]);
+                String gUserName = txt_user.getText().toString();
+                Cursor cursor = db.getScore(gUserName);
+                while (cursor.moveToNext()){
+
+                    if(cursor.getInt(0) > score){
+                    }else{
+                        db.UpdateHighScore(gUserName,score);
+                    }
+
+                }
+
                 txt_F_B.setVisibility(View.VISIBLE);
                 rl_over.setVisibility(View.INVISIBLE);
                 rl_start.setVisibility(View.VISIBLE);
@@ -110,11 +135,13 @@ public class MainActivity extends AppCompatActivity {
         });
         showDialog();
         showDialogSetting();
+        showDialogLogin();
+        dialogLogin.show();
 
         btn_trophy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                startActivity(new Intent(getApplicationContext(), top_score.class));
             }
         });
     }
@@ -205,12 +232,59 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void showDialogLogin() {
+        dialogLogin = new Dialog(MainActivity.this);
+        dialogLogin.setContentView(R.layout.login_user);
+        dialogLogin.getWindow().setBackgroundDrawable(getDrawable(R.drawable.bg_dialog));
+        dialogLogin.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialogLogin.setCancelable(true);
+
+        btnLogin = dialogLogin.findViewById(R.id.button_login);
+        btnNoLogin = dialogLogin.findViewById(R.id.button_no_login);
+        txt_userLogin = dialogLogin.findViewById(R.id.user_name);
+
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                Login(txt_userLogin.getText().toString());
+            }
+        });
+
+        btnNoLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogLogin.dismiss();
+            }
+        });
+    }
+
+    private void Login(String gUserName) {
+        if(gUserName.isEmpty()){
+            Toast.makeText(this, "Vui Lòng Nhập Tên Của Bạn", Toast.LENGTH_SHORT).show();
+        }else{
+
+            Boolean resultCheckName = db.CheckNameExists(gUserName);
+            if(resultCheckName == true){
+
+                db.InsertData(gUserName, 0);
+                dialogLogin.dismiss();
+                txt_user.setText(gUserName);
+
+            }else{
+
+                dialogLogin.dismiss();
+                txt_user.setText(gUserName);
+
+            }
+        }
+    }
 
     @Override
     public void onBackPressed() {
-        if(dialog.isShowing() || dialogSetting.isShowing()) {
+        if(dialog.isShowing() || dialogSetting.isShowing() || dialogScore.isShowing()) {
             dialog.dismiss();
             dialogSetting.dismiss();
+            dialogScore.dismiss();
         } else {
             super.onBackPressed();
         }
