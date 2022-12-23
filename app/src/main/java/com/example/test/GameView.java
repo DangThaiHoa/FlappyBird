@@ -32,7 +32,7 @@ public class GameView extends View {
     private ArrayList<Pipe> arrPipes;
     public static int speedOfPipe;
     private int sumpipe, distance;
-    private int score,bestscore;
+    public static int score,bestscore;
     private boolean start;
     private Context context;
     private int soundjump;

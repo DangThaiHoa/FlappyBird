@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class top_score extends AppCompatActivity {
     ScoreAdapter scoreAdapter;
     ArrayList<Score> scoreArrayList = new ArrayList<>();
     SQLiteDatabase sqLiteDatabase;
+    ImageView btn_Back;
 
     TopScoreDatabase db = new TopScoreDatabase(this);
 
@@ -26,6 +29,7 @@ public class top_score extends AppCompatActivity {
         setContentView(R.layout.activity_top_score);
 
         rc = findViewById(R.id.topScore);
+        btn_Back = findViewById(R.id.back_btn);
         rc.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL,false));
         Cursor cursor = db.getListScore();
         if(cursor.getCount() == 0){
@@ -41,6 +45,13 @@ public class top_score extends AppCompatActivity {
             scoreAdapter = new ScoreAdapter(this, R.layout.list_top_design, scoreArrayList, sqLiteDatabase);
             rc.setAdapter(scoreAdapter);
         }
+
+        btn_Back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                top_score.super.onBackPressed();
+            }
+        });
 
     }
 }

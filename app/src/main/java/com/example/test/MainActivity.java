@@ -41,10 +41,6 @@ public class MainActivity extends AppCompatActivity {
     int bird_a, bird_b;
     private GameView gv;
     Dialog dialog, dialogSetting, dialogLogin, dialogScore;
-    RecyclerView rc;
-    ScoreAdapter scoreAdapter;
-    ArrayList<Score> scoreArrayList = new ArrayList<>();
-    SQLiteDatabase sqLiteDatabase;
 
     TopScoreDatabase db = new TopScoreDatabase(this);
 
@@ -104,20 +100,6 @@ public class MainActivity extends AppCompatActivity {
         txt_restart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String bestScore = txt_best_score.getText().toString();
-                String[] split = bestScore.split(":");
-                Integer score = Integer.valueOf(split[1]);
-                String gUserName = txt_user.getText().toString();
-                Cursor cursor = db.getScore(gUserName);
-                while (cursor.moveToNext()){
-
-                    if(cursor.getInt(0) > score){
-                    }else{
-                        db.UpdateHighScore(gUserName,score);
-                    }
-
-                }
-
                 txt_F_B.setVisibility(View.VISIBLE);
                 rl_over.setVisibility(View.INVISIBLE);
                 rl_start.setVisibility(View.VISIBLE);
@@ -144,6 +126,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), top_score.class));
             }
         });
+
+        txt_user.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogLogin.show();
+            }
+        });
     }
 
     protected void onResume() {
@@ -153,6 +142,19 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onPause() {
         super.onPause();
+        String bestScore = txt_best_score.getText().toString();
+        String[] split = bestScore.split(":");
+        Integer score = Integer.valueOf(split[1]);
+        String gUserName = txt_user.getText().toString();
+        Cursor cursor = db.getScore(gUserName);
+        while (cursor.moveToNext()){
+
+            if(cursor.getInt(0) > score){
+            }else{
+                db.UpdateHighScore(gUserName,score);
+            }
+
+        }
         media.pause();
     }
 
@@ -237,7 +239,8 @@ public class MainActivity extends AppCompatActivity {
         dialogLogin.setContentView(R.layout.login_user);
         dialogLogin.getWindow().setBackgroundDrawable(getDrawable(R.drawable.bg_dialog));
         dialogLogin.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialogLogin.setCancelable(true);
+        dialogLogin.setCancelable(false);
+        dialogLogin.setCanceledOnTouchOutside(false);
 
         btnLogin = dialogLogin.findViewById(R.id.button_login);
         btnNoLogin = dialogLogin.findViewById(R.id.button_no_login);
@@ -253,6 +256,8 @@ public class MainActivity extends AppCompatActivity {
         btnNoLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                txt_user.setText("Nhập Tên Ở Đây");
+                GameView.bestscore = 0;
                 dialogLogin.dismiss();
             }
         });
@@ -267,11 +272,13 @@ public class MainActivity extends AppCompatActivity {
             if(resultCheckName == true){
 
                 db.InsertData(gUserName, 0);
+                GameView.bestscore = 0;
                 dialogLogin.dismiss();
                 txt_user.setText(gUserName);
 
             }else{
 
+                GameView.bestscore = 0;
                 dialogLogin.dismiss();
                 txt_user.setText(gUserName);
 

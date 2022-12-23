@@ -8,10 +8,17 @@
     tools:context=".top_score">
 
     <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_baseline_chevron_left_24"/>
+
+    <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@mipmap/trophy"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:layout_marginBottom="20dp"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
