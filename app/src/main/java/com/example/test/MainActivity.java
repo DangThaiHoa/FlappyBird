@@ -1,14 +1,12 @@
 package com.example.test;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -22,8 +20,6 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     int bird_a, bird_b;
     private GameView gv;
     Dialog dialog, dialogSetting, dialogLogin, dialogScore;
+    AlertDialog.Builder builder;
 
     TopScoreDatabase db = new TopScoreDatabase(this);
 
@@ -100,6 +97,19 @@ public class MainActivity extends AppCompatActivity {
         txt_restart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String bestScore = txt_best_score.getText().toString();
+                String[] split = bestScore.split(":");
+                Integer score = Integer.valueOf(split[1]);
+                String gUserName = txt_user.getText().toString();
+                Cursor cursor = db.getScore(gUserName);
+                while (cursor.moveToNext()){
+
+                    if(cursor.getInt(0) > score){
+                    }else{
+                        db.UpdateHighScore(gUserName,score);
+                    }
+
+                }
                 txt_F_B.setVisibility(View.VISIBLE);
                 rl_over.setVisibility(View.INVISIBLE);
                 rl_start.setVisibility(View.VISIBLE);
@@ -256,9 +266,25 @@ public class MainActivity extends AppCompatActivity {
         btnNoLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                txt_user.setText("Nhập Tên Ở Đây");
-                GameView.bestscore = 0;
                 dialogLogin.dismiss();
+                builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Cảnh Báo");
+                builder.setMessage("Bạn có chắc chắn muốn chơi không đăng nhập? Thành tích của bạn sẽ không được lưu lại")
+                        .setCancelable(true)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                txt_user.setText("Nhập Tên Ở Đây");
+                                GameView.bestscore = 0;
+                                dialogLogin.dismiss();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogLogin.show();
+                            }
+                        }).show();
             }
         });
     }
@@ -272,17 +298,11 @@ public class MainActivity extends AppCompatActivity {
             if(resultCheckName == true){
 
                 db.InsertData(gUserName, 0);
-                GameView.bestscore = 0;
-                dialogLogin.dismiss();
-                txt_user.setText(gUserName);
-
-            }else{
-
-                GameView.bestscore = 0;
-                dialogLogin.dismiss();
-                txt_user.setText(gUserName);
 
             }
+            GameView.bestscore = 0;
+            dialogLogin.dismiss();
+            txt_user.setText(gUserName);
         }
     }
 
